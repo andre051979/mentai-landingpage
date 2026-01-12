@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MentAI | Consultoria em Infraestrutura ADN™</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        mentai: {
+                            dark: '#020617', 
+                            panel: '#0f172a', 
+                            accent: '#06b6d4', 
+                            profit: '#10b981', 
+                            alert: '#f43f5e', 
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #020617; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #06b6d4; }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            height: 300px;
+        }
+
+        .bg-grid {
+            background-size: 40px 40px;
+            background-image: linear-gradient(to right, rgba(30, 41, 59, 0.5) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(30, 41, 59, 0.5) 1px, transparent 1px);
+        }
+        
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .option-btn.active {
+            background-color: #06b6d4;
+            color: #020617;
+            border-color: #06b6d4;
+            transform: translateX(8px);
+            box-shadow: -10px 0 20px rgba(6, 182, 212, 0.2);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade { animation: fadeIn 0.4s ease forwards; }
+
+        .pulse-border {
+            box-shadow: 0 0 0 0 rgba(6, 182, 212, 0.4);
+            animation: pulse-ring 2s infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% { box-shadow: 0 0 0 0 rgba(6, 182, 212, 0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(6, 182, 212, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(6, 182, 212, 0); }
+        }
+    </style>
+
+    <!-- Chosen Palette: Slate 950 and Cyan/Emerald Tech -->
+    <!-- Application Structure Plan: 
+         1. Landing View: Persuasive copy and visualization.
+         2. Audit View: 10-question wizard with contextualized text options.
+         3. Result View: Personalized dashboard + Webhook for n8n + Direct WhatsApp trigger.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+<body class="bg-mentai-dark text-slate-300 font-sans selection:bg-mentai-accent selection:text-white overflow-x-hidden">
+
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 glass-panel border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <button onclick="showView('landing')" class="text-2xl font-mono font-bold text-white tracking-tighter">Ment<span class="text-mentai-accent">AI</span></button>
+                </div>
+                <div class="hidden md:flex items-center space-x-8">
+                    <button onclick="showView('landing'); document.getElementById('adn-section').scrollIntoView()" class="hover:text-mentai-accent transition-colors text-sm font-medium">O Método ADN</button>
+                    <button onclick="showView('landing'); document.getElementById('audit-info').scrollIntoView()" class="hover:text-mentai-accent transition-colors text-sm font-medium">O Audit</button>
+                    <button onclick="showView('audit')" class="bg-mentai-accent hover:bg-cyan-400 text-slate-900 font-bold px-5 py-2 rounded-full transition-all text-sm shadow-[0_0_15px_rgba(6,182,212,0.3)]">
+                        Fazer Audit Gratuito
+                    </button>
+                </div>
+                <div class="md:hidden">
+                    <button onclick="showView('audit')" class="bg-mentai-accent text-slate-900 p-2 rounded-lg font-bold text-xs uppercase">Audit</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- VIEW: LANDING PAGE -->
+    <main id="view-landing" class="view-section">
+        <!-- Hero Section -->
+        <section class="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
+            <div class="absolute inset-0 bg-grid z-0 opacity-20"></div>
+            <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-mentai-accent/10 rounded-full blur-3xl -z-10"></div>
+            <div class="relative z-10 max-w-7xl mx-auto px-4 text-center">
+                <span class="inline-block py-1 px-3 rounded-full bg-slate-800 border border-slate-700 text-mentai-accent text-xs font-mono mb-6 uppercase tracking-widest">Tecnologia de Alta Performance 2026</span>
+                <h1 class="text-4xl md:text-6xl lg:text-7xl font-extrabold text-white tracking-tight mb-8">Sua empresa escala ou <br/><span class="text-transparent bg-clip-text bg-gradient-to-r from-mentai-alert to-orange-500">apenas sobrevive</span>?</h1>
+                <p class="max-w-2xl mx-auto text-xl text-slate-400 mb-10 leading-relaxed">Instale a <span class="text-white font-semibold">Infraestrutura Invisível</span> através do Método ADN™ e assuma o controle total do seu crescimento.</p>
+                <div class="flex flex-col sm:flex-row justify-center gap-4">
+                    <button onclick="showView('audit')" class="pulse-border px-8 py-5 bg-mentai-accent hover:bg-cyan-400 text-slate-900 font-black rounded-xl text-lg transition-all shadow-2xl hover:scale-105">INICIAR AUDIT ADN™ GRATUITO</button>
+                    <button onclick="document.getElementById('adn-section').scrollIntoView()" class="px-8 py-5 bg-slate-800 hover:bg-slate-700 text-white font-semibold rounded-xl text-lg border border-slate-700 transition-all">Conhecer a Metodologia</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ADN DEEP EXPLANATION -->
+        <section id="adn-section" class="py-24 bg-slate-950">
+            <div class="max-w-7xl mx-auto px-4">
+                <div class="text-center mb-16">
+                    <h2 class="text-3xl md:text-5xl font-black text-white mb-6">O Coração da MentAI: O Método ADN™</h2>
+                    <p class="text-slate-400 max-w-2xl mx-auto italic">Nós não vendemos software. Nós rearquitetamos o código genético operacional da sua empresa para a era da autonomia.</p>
+                </div>
+
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="p-8 bg-slate-900 border border-slate-800 rounded-3xl hover:border-mentai-accent transition-all group">
+                        <div class="w-16 h-16 bg-mentai-accent/10 rounded-2xl flex items-center justify-center text-3xl mb-6 text-mentai-accent group-hover:scale-110 transition-transform">A</div>
+                        <h3 class="text-2xl font-bold text-white mb-4">[A]utonomia</h3>
+                        <p class="text-slate-400 text-sm leading-relaxed">
+                            Substituímos o esforço humano manual por **Fluxos de Execução Autônomos**. Criamos agentes que operam 24/7 em vendas, suporte e triagem, eliminando a latência de resposta.
+                        </p>
+                    </div>
+                    <div class="p-8 bg-slate-900 border border-slate-800 rounded-3xl hover:border-purple-500 transition-all group">
+                        <div class="w-16 h-16 bg-purple-500/10 rounded-2xl flex items-center justify-center text-3xl mb-6 text-purple-500 group-hover:scale-110 transition-transform">D</div>
+                        <h3 class="text-2xl font-bold text-white mb-4">[D]ados</h3>
+                        <p class="text-slate-400 text-sm leading-relaxed">
+                            Construímos o seu **Cérebro Digital**. Transformamos documentos e histórico em uma base de conhecimento privada. A inteligência deixa de morar nas pessoas e vira um ativo fixo.
+                        </p>
+                    </div>
+                    <div class="p-8 bg-slate-900 border border-slate-800 rounded-3xl hover:border-mentai-profit transition-all group">
+                        <div class="w-16 h-16 bg-mentai-profit/10 rounded-2xl flex items-center justify-center text-3xl mb-6 text-mentai-profit group-hover:scale-110 transition-transform">N</div>
+                        <h3 class="text-2xl font-bold text-white mb-4">[N]egócios</h3>
+                        <p class="text-slate-400 text-sm leading-relaxed">
+                            Foco total em **ROI e Escalabilidade**. Nossa infraestrutura é desenhada para que seu faturamento dobre sem que você precise dobrar seu custo fixo ou número de funcionários.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Agitation Section -->
+        <section id="problema" class="py-20 bg-slate-900 border-t border-slate-800">
+            <div class="max-w-7xl mx-auto px-4 grid lg:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h2 class="text-3xl font-bold text-white mb-6">A Ineficiência que Drena seu Lucro</h2>
+                    <p class="text-slate-400 mb-8 text-lg leading-relaxed">Empresas de R$ 2MM a R$ 10MM anual sofrem de **Miopia Operacional**: elas contratam pessoas para resolver problemas que deveriam ser resolvidos por infraestrutura.</p>
+                    <div class="space-y-6">
+                        <div class="p-5 bg-slate-950 rounded-2xl border border-slate-800 flex gap-4 transition-all hover:bg-slate-900">
+                            <span class="text-3xl">📉</span>
+                            <div>
+                                <h4 class="text-white font-bold">Latência Humana</h4>
+                                <p class="text-sm text-slate-500 mt-1">Sua empresa demora horas para responder um lead. O mercado de 2026 exige milissegundos.</p>
+                            </div>
+                        </div>
+                        <div class="p-5 bg-slate-950 rounded-2xl border border-slate-800 flex gap-4 transition-all hover:bg-slate-900">
+                            <span class="text-3xl">🛡️</span>
+                            <div>
+                                <h4 class="text-white font-bold">Fragilidade Intelectual</h4>
+                                <p class="text-sm text-slate-500 mt-1">Seu negócio é refém de funcionários específicos. Sem eles, o processo morre.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-slate-950 p-8 rounded-3xl border border-slate-800 shadow-2xl">
+                    <div class="chart-container">
+                        <canvas id="landingChart"></canvas>
+                    </div>
+                    <div class="flex justify-center mt-6 gap-3">
+                        <button onclick="updateLandingChart('hours')" id="btn-hours" class="text-[10px] uppercase font-bold text-mentai-accent border border-mentai-accent/30 px-3 py-1.5 rounded-lg bg-mentai-accent/10">Horas Desperdiçadas</button>
+                        <button onclick="updateLandingChart('cost')" id="btn-cost" class="text-[10px] uppercase font-bold text-slate-500 border border-slate-700 px-3 py-1.5 rounded-lg">Custo da Lerdeza</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Audit Info Section -->
+        <section id="audit-info" class="py-24 bg-mentai-dark">
+            <div class="max-w-4xl mx-auto px-4 text-center">
+                <h2 class="text-3xl md:text-5xl font-black text-white mb-8 leading-tight">Mapeie suas <span class="text-mentai-accent">Oportunidades Ocultas</span></h2>
+                <p class="text-slate-400 text-lg mb-12">
+                    O Audit ADN™ é o início da sua soberania operacional. 10 perguntas cruciais para revelar o quanto você está deixando na mesa hoje.
+                </p>
+                <div class="grid md:grid-cols-2 gap-4 mb-12 text-left">
+                    <div class="p-4 bg-slate-900 border border-slate-800 rounded-xl text-sm"><span class="text-mentai-accent mr-2">✦</span> Diagnóstico de Autonomia</div>
+                    <div class="p-4 bg-slate-900 border border-slate-800 rounded-xl text-sm"><span class="text-mentai-accent mr-2">✦</span> Auditoria de Ativos de Dados</div>
+                    <div class="p-4 bg-slate-900 border border-slate-800 rounded-xl text-sm"><span class="text-mentai-accent mr-2">✦</span> Mapeamento de Risco Intelectual</div>
+                    <div class="p-4 bg-slate-900 border border-slate-800 rounded-xl text-sm"><span class="text-mentai-accent mr-2">✦</span> Projeção de ROI via Automação</div>
+                </div>
+                <button onclick="showView('audit')" class="px-12 py-6 bg-mentai-accent hover:bg-cyan-400 text-slate-950 font-black rounded-2xl text-xl shadow-[0_0_30px_rgba(6,182,212,0.3)] transition-all hover:scale-105">
+                    INICIAR AUDIT AGORA
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <!-- VIEW: AUDIT FORM WIZARD (10 QUESTIONS) -->
+    <main id="view-audit" class="view-section hidden pt-32 pb-20 min-h-screen bg-slate-950 bg-grid">
+        <div class="max-w-3xl mx-auto px-4">
+            <div class="mb-12">
+                <div class="flex justify-between items-center mb-4">
+                    <span id="step-label" class="text-xs font-mono uppercase text-mentai-accent font-bold tracking-widest">Mapeamento ADN em Curso</span>
+                    <span id="step-counter" class="text-slate-500 font-mono text-xs italic">Questão 1 de 10</span>
+                </div>
+                <div class="h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                    <div id="progress-bar" class="h-full bg-mentai-accent w-[10%] transition-all duration-500"></div>
+                </div>
+            </div>
+
+            <div class="glass-panel p-6 md:p-12 rounded-[2rem] shadow-2xl relative">
+                <form id="audit-form" onsubmit="handleFormSubmit(event)">
+                    <div id="questions-container" class="min-h-[350px] flex flex-col justify-center">
+                        <!-- Questions JS inject -->
+                    </div>
+
+                    <div class="mt-8">
+                        <div id="contact-fields" class="hidden space-y-6 mb-8 border-t border-slate-800 pt-8 animate-fade">
+                            <h4 class="text-white font-bold text-center mb-4 italic text-sm">Onde enviamos o seu Relatório de Maturidade?</h4>
+                            <div class="grid md:grid-cols-1 gap-4">
+                                <input type="text" id="client-name" placeholder="Nome Completo" required class="w-full bg-slate-900 border border-slate-700 rounded-xl p-4 text-white outline-none focus:border-mentai-accent transition-all text-sm">
+                                <input type="email" id="client-email" placeholder="E-mail Corporativo" required class="w-full bg-slate-900 border border-slate-700 rounded-xl p-4 text-white outline-none focus:border-mentai-accent transition-all text-sm">
+                                <input type="tel" id="client-whatsapp" placeholder="WhatsApp (DDD) 9XXXX-XXXX" required class="w-full bg-slate-900 border border-slate-700 rounded-xl p-4 text-white outline-none focus:border-mentai-accent transition-all text-sm">
+                                <p id="validation-error" class="text-mentai-alert text-xs text-center hidden font-bold"></p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <button type="button" id="prev-btn" onclick="prevQuestion()" class="invisible text-slate-500 hover:text-white font-bold transition-colors flex items-center gap-2">← Voltar</button>
+                            <button type="button" id="next-btn" onclick="nextQuestion()" class="bg-slate-800 text-white px-8 py-4 rounded-xl font-bold hover:bg-slate-700">Próxima</button>
+                            <button type="submit" id="submit-btn" class="hidden bg-mentai-profit text-slate-900 px-10 py-5 rounded-xl font-black hover:scale-105 shadow-[0_0_20px_rgba(16,185,129,0.3)]">
+                                FINALIZAR DIAGNÓSTICO
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <!-- VIEW: RESULTS DASHBOARD -->
+    <main id="view-results" class="view-section hidden pt-32 pb-20 bg-mentai-dark">
+        <div class="max-w-5xl mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-white text-3xl font-black mb-2">Seu ADN Operacional foi Mapeado</h2>
+                <p id="res-greeting" class="text-slate-500 italic">Preparamos uma análise exclusiva para você.</p>
+            </div>
+
+            <div class="grid lg:grid-cols-3 gap-8 mb-8">
+                <div class="bg-slate-900 p-10 rounded-[2rem] border border-slate-800 text-center flex flex-col justify-center items-center shadow-2xl">
+                    <span class="text-[10px] font-mono text-slate-500 uppercase tracking-widest block mb-4">Índice ADN™ Geral</span>
+                    <div id="res-score" class="text-7xl font-black text-mentai-accent mb-4">0%</div>
+                    <div id="res-status" class="py-1.5 px-4 rounded-full text-[10px] font-bold uppercase tracking-tighter">Status</div>
+                </div>
+
+                <div class="lg:col-span-2 bg-slate-900/50 p-10 rounded-[2rem] border border-slate-800">
+                    <h4 class="text-white font-bold text-xl mb-4">Diagnóstico Instantâneo</h4>
+                    <p id="res-analysis" class="text-slate-400 leading-relaxed text-sm italic mb-6">Processando análise...</p>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="p-4 bg-slate-950 rounded-xl border border-slate-800">
+                            <span class="text-[10px] text-slate-500 block mb-1 uppercase tracking-widest">Gargalo Crítico</span>
+                            <span id="res-gargalo" class="text-mentai-alert font-bold text-xs uppercase tracking-tight">Calculando...</span>
+                        </div>
+                        <div class="p-4 bg-slate-950 rounded-xl border border-slate-800">
+                            <span class="text-[10px] text-slate-500 block mb-1 uppercase tracking-widest">Soberania de Dados</span>
+                            <span id="res-soberania" class="text-slate-400 font-bold text-xs uppercase tracking-tight">Calculando...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-r from-slate-900 to-panel border border-slate-800 p-10 rounded-[2.5rem] flex flex-col md:flex-row items-center justify-between gap-8 shadow-2xl">
+                <div>
+                    <h4 class="text-white font-bold text-2xl mb-1">Horas Recuperáveis: <span id="res-hours-display" class="text-mentai-profit">--h / mês</span></h4>
+                    <p class="text-slate-500 text-sm italic">O relatório detalhado está sendo processado para o seu e-mail.</p>
+                </div>
+                <button id="whatsapp-btn" class="bg-mentai-accent text-slate-950 px-10 py-5 rounded-2xl font-black text-lg hover:scale-105 transition-all shadow-[0_0_20px_rgba(6,182,212,0.4)]">
+                    FALAR COM UM ENGENHEIRO
+                </button>
+            </div>
+            
+            <p class="text-center mt-8 text-slate-600 text-[10px] uppercase font-mono tracking-widest">Dados integrados via Webhook ADN para a central de inteligência MentAI.</p>
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-slate-950 py-16 border-t border-slate-900">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <span class="text-2xl font-mono font-bold text-slate-800 tracking-tighter mb-4 block">Ment<span class="text-slate-700">AI</span></span>
+            <p class="text-slate-600 text-sm mb-4 italic">Evoluindo o DNA da infraestrutura empresarial.</p>
+            <p class="text-slate-800 text-[10px] uppercase tracking-widest font-mono">© 2026 MentAI Consultoria | mentaiconsultoria.com.br</p>
+        </div>
+    </footer>
+
+    <!-- JS LOGIC -->
+    <script>
+        // --- WEBHOOK CONFIG (n8n) ---
+        const WEBHOOK_URL = "https://mentai-automacao-n8n-t.yzgabq.easypanel.host/webhook-test/coletadados"; 
+
+        const questions = [
+            { 
+                id: 1, pilar: "Autonomia", 
+                text: "Se você se ausentar por 20 dias hoje, a operação continua rodando e crescendo sem sua intervenção?",
+                options: [
+                    { val: 1, text: "Para totalmente, tudo depende de mim." },
+                    { val: 2, text: "Roda com dificuldades e muitos erros." },
+                    { val: 3, text: "Roda o básico, mas a empresa não cresce." },
+                    { val: 4, text: "Roda bem, mas perde velocidade estratégica." },
+                    { val: 5, text: "Roda e cresce normalmente, 100% independente." }
+                ]
+            },
+            { 
+                id: 2, pilar: "Autonomia", 
+                text: "Qual porcentagem do tempo da sua equipe é gasta em tarefas repetitivas (copia/cola, planilhas, relatórios manuais)?",
+                options: [
+                    { val: 1, text: "Praticamente o dia todo (acima de 80%)." },
+                    { val: 2, text: "A maior parte do tempo (50% a 80%)." },
+                    { val: 3, text: "Metade do tempo produtivo (30% a 50%)." },
+                    { val: 4, text: "Uma pequena parte do dia (10% a 30%)." },
+                    { val: 5, text: "Quase nada, tudo é automatizado (menos de 10%)." }
+                ]
+            },
+            { 
+                id: 3, pilar: "Autonomia", 
+                text: "Qual é o tempo médio de resposta para um lead qualificado que chega em seus canais de vendas?",
+                options: [
+                    { val: 1, text: "Mais de 24 horas (ou perdemos muitos leads)." },
+                    { val: 2, text: "Entre 12 e 24 horas." },
+                    { val: 3, text: "Entre 4 e 12 horas." },
+                    { val: 4, text: "Entre 1 e 4 horas." },
+                    { val: 5, text: "Menos de 15 minutos (Resposta imediata)." }
+                ]
+            },
+            { 
+                id: 4, pilar: "Autonomia", 
+                text: "Para dobrar seu faturamento hoje, você precisaria contratar novas pessoas proporcionalmente ao crescimento?",
+                options: [
+                    { val: 1, text: "Sim, preciso dobrar a equipe de operação." },
+                    { val: 2, text: "Sim, em quase todos os setores." },
+                    { val: 3, text: "Sim, mas apenas em setores específicos." },
+                    { val: 4, text: "Poucas contratações seriam necessárias." },
+                    { val: 5, text: "Não, a IA e a infraestrutura absorvem a escala." }
+                ]
+            },
+            { 
+                id: 5, pilar: "Dados", 
+                text: "O conhecimento intelectual da sua empresa está centralizado em uma base acessível por IA ou está fragmentado?",
+                options: [
+                    { val: 1, text: "Está tudo na cabeça das pessoas." },
+                    { val: 2, text: "Documentação básica e muito desorganizada." },
+                    { val: 3, text: "Temos processos em PDFs e textos soltos." },
+                    { val: 4, text: "Base organizada, mas sem IA integrada." },
+                    { val: 5, text: "Cérebro Digital totalmente integrado e ativo." }
+                ]
+            },
+            { 
+                id: 6, pilar: "Dados", 
+                text: "Se o seu melhor colaborador saísse hoje, qual o nível de impacto e perda de processos que ocorreria imediatamente?",
+                options: [
+                    { val: 1, text: "Caos total, processos chave param." },
+                    { val: 2, text: "Impacto grave e meses de recuperação." },
+                    { val: 3, text: "Impacto moderado na produtividade." },
+                    { val: 4, text: "Impacto leve, fácil de substituir." },
+                    { val: 5, text: "Nenhum impacto, o sistema retém a inteligência." }
+                ]
+            },
+            { 
+                id: 7, pilar: "Dados", 
+                text: "Você possui indicadores de lucro, CAC e churn atualizados automaticamente em tempo real em um dashboard?",
+                options: [
+                    { val: 1, text: "Não tenho indicadores definidos." },
+                    { val: 2, text: "Uso planilhas manuais e lentas." },
+                    { val: 3, text: "Dashboards manuais atualizados semanalmente." },
+                    { val: 4, text: "Indicadores semi-automáticos." },
+                    { val: 5, text: "Real-time Dashboard Autônomo e Integrado." }
+                ]
+            },
+            { 
+                id: 8, pilar: "Negócios", 
+                text: "Qual porcentagem do seu dia como dono é gasta resolvendo problemas operacionais ou validando tarefas rotineiras?",
+                options: [
+                    { val: 1, text: "Quase o dia todo (acima de 90%)." },
+                    { val: 2, text: "A maior parte do dia (60% a 90%)." },
+                    { val: 3, text: "Cerca de metade do meu tempo (40% a 60%)." },
+                    { val: 4, text: "Uma pequena parte do dia (20% a 40%)." },
+                    { val: 5, text: "Foco total em estratégia (menos de 10% operacional)." }
+                ]
+            },
+            { 
+                id: 9, pilar: "Negócios", 
+                text: "Qual é a frequência de erros manuais (esquecimento de follow-up, erros em propostas) na sua operação atual?",
+                options: [
+                    { val: 1, text: "Diária e com alto custo financeiro." },
+                    { val: 2, text: "Semanal e recorrente." },
+                    { val: 3, text: "Ocasional, mas incomoda." },
+                    { val: 4, text: "Rara, processos bem definidos." },
+                    { val: 5, text: "Inexistente, processo blindado por tecnologia." }
+                ]
+            },
+            { 
+                id: 10, pilar: "Negócios", 
+                text: "Sua empresa utiliza IA para EXECUTAR tarefas integradas (ex: n8n, automações) ou apenas para gerar textos isolados?",
+                options: [
+                    { val: 1, text: "Não utilizamos IA em nenhum processo." },
+                    { val: 2, text: "Apenas para textos/e-mails isolados (ChatGPT)." },
+                    { val: 3, text: "Automações simples de e-mail e CRM." },
+                    { val: 4, text: "IA integrada a ferramentas chave do negócio." },
+                    { val: 5, text: "Ecossistema de Agentes Autônomos Integrados." }
+                ]
+            }
+        ];
+
+        const responses = {};
+        const responseTexts = {};
+        let qIndex = 0;
+
+        // WHATSAPP MASK
+        document.getElementById('client-whatsapp').addEventListener('input', (e) => {
+            let x = e.target.value.replace(/\D/g, '').match(/(\d{0,2})(\d{0,5})(\d{0,4})/);
+            e.target.value = !x[2] ? x[1] : '(' + x[1] + ') ' + x[2] + (x[3] ? '-' + x[3] : '');
+        });
+
+        function showView(viewId) {
+            document.querySelectorAll('.view-section').forEach(v => v.classList.add('hidden'));
+            document.getElementById(`view-${viewId}`).classList.remove('hidden');
+            window.scrollTo(0,0);
+            if(viewId === 'landing') initLandingChart();
+            if(viewId === 'audit') { qIndex = 0; renderQuestion(); }
+        }
+
+        function renderQuestion() {
+            const container = document.getElementById('questions-container');
+            const q = questions[qIndex];
+            
+            document.getElementById('step-counter').innerText = `Questão ${qIndex + 1} de 10`;
+            document.getElementById('progress-bar').style.width = `${((qIndex + 1) / 10) * 100}%`;
+
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const submitBtn = document.getElementById('submit-btn');
+            const contact = document.getElementById('contact-fields');
+
+            if(qIndex === 0) prevBtn.classList.add('invisible'); else prevBtn.classList.remove('invisible');
+
+            if(qIndex === 9) {
+                nextBtn.classList.add('hidden');
+                submitBtn.classList.remove('hidden');
+                contact.classList.remove('hidden');
+            } else {
+                nextBtn.classList.remove('hidden');
+                submitBtn.classList.add('hidden');
+                contact.classList.add('hidden');
+            }
+
+            const savedVal = responses[q.id] || 0;
+            
+            container.innerHTML = `
+                <div class="animate-fade">
+                    <p class="text-xs font-mono text-mentai-accent uppercase tracking-[0.2em] mb-4">${q.pilar}</p>
+                    <p class="text-white text-xl md:text-2xl font-bold mb-8 leading-tight">${q.text}</p>
+                    <div class="space-y-3">
+                        ${q.options.map(opt => `
+                            <button type="button" onclick="selectOption(${q.id}, ${opt.val}, '${opt.text}')" 
+                                class="option-btn w-full text-left p-4 rounded-xl border border-slate-800 bg-slate-900/40 hover:border-mentai-accent/40 transition-all text-sm ${savedVal === opt.val ? 'active' : ''}">
+                                ${opt.text}
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function selectOption(qId, val, text) {
+            responses[qId] = val;
+            responseTexts[qId] = text;
+            renderQuestion();
+            if(qIndex < 9) setTimeout(nextQuestion, 400);
+        }
+
+        function nextQuestion() {
+            if(!responses[questions[qIndex].id]) return;
+            if(qIndex < 9) { qIndex++; renderQuestion(); }
+        }
+
+        function prevQuestion() {
+            if(qIndex > 0) { qIndex--; renderQuestion(); }
+        }
+
+        function validateEmail(email) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email); }
+        function validateWhatsApp(phone) { return phone.replace(/\D/g, '').length === 11; }
+
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+            const name = document.getElementById('client-name').value;
+            const email = document.getElementById('client-email').value;
+            const whatsapp = document.getElementById('client-whatsapp').value;
+            const err = document.getElementById('validation-error');
+
+            if(!validateEmail(email)) { err.innerText = "E-mail corporativo inválido"; err.classList.remove('hidden'); return; }
+            if(!validateWhatsApp(whatsapp)) { err.innerText = "WhatsApp inválido (DDD + 9 + Número)"; err.classList.remove('hidden'); return; }
+            err.classList.add('hidden');
+
+            const sum = Object.values(responses).reduce((a, b) => a + b, 0);
+            const scorePercent = Math.round((sum / 50) * 100);
+            const hoursRecoverable = Math.round((100 - scorePercent) * 0.9);
+
+            let statusText = "";
+            let statusClass = "";
+            let analysisText = "";
+            let gargaloText = "";
+            let soberaniaText = "";
+
+            if(scorePercent < 45) {
+                statusText = "Risco Operacional Crítico";
+                statusClass = "py-1.5 px-4 rounded-full bg-mentai-alert/20 text-mentai-alert text-[10px] font-bold uppercase";
+                analysisText = "Sua empresa é refém do esforço manual. A falta de um Cérebro Digital coloca o negócio em risco toda vez que alguém da equipe se ausenta.";
+                gargaloText = "Latência Humana";
+                soberaniaText = "Vulnerável";
+            } else if(scorePercent < 75) {
+                statusText = "Operação em Transição";
+                statusClass = "py-1.5 px-4 rounded-full bg-orange-500/20 text-orange-500 text-[10px] font-bold uppercase";
+                analysisText = "Você já usa ferramentas digitais, mas elas operam de forma isolada. A 'Latência Humana' ainda trava sua escala e ROI.";
+                gargaloText = "Silos de Dados";
+                soberaniaText = "Parcial";
+            } else {
+                statusText = "Maturidade ADN Alta";
+                statusClass = "py-1.5 px-4 rounded-full bg-mentai-profit/20 text-mentai-profit text-[10px] font-bold uppercase";
+                analysisText = "Parabéns. Sua empresa possui fundamentos sólidos de autonomia. Foco agora em fine-tuning de agentes especialistas.";
+                gargaloText = "Escala de Margem";
+                soberaniaText = "Consolidada";
+            }
+
+            const detailedResponses = questions.map(q => ({
+                id_pergunta: q.id,
+                pergunta: q.text,
+                pilar: q.pilar,
+                nota_selecionada: responses[q.id] || 0,
+                texto_resposta: responseTexts[q.id] || ""
+            }));
+
+            const payload = {
+                metadata: { origem: 'MentAI Audit Web', data_extensa: new Date().toLocaleString('pt-BR') },
+                cliente: { nome_completo: name, email: email, whatsapp: whatsapp },
+                diagnostico: {
+                    indice_adn_final: scorePercent + "%",
+                    status_operacional: statusText,
+                    analise_detalhada: analysisText,
+                    gargalo_principal: gargaloText,
+                    soberania_status: soberaniaText,
+                    horas_recuperaveis_valor: hoursRecoverable + "h",
+                    respostas_completas: detailedResponses
+                }
+            };
+
+            if (WEBHOOK_URL) {
+                fetch(WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                }).catch(err => console.error("Webhook failed:", err));
+            }
+
+            document.getElementById('res-greeting').innerText = `Análise personalizada para ${name}`;
+            document.getElementById('res-score').innerText = `${scorePercent}%`;
+            document.getElementById('res-status').innerText = statusText;
+            document.getElementById('res-status').className = statusClass;
+            document.getElementById('res-analysis').innerText = analysisText;
+            document.getElementById('res-gargalo').innerText = gargaloText;
+            document.getElementById('res-soberania').innerText = soberaniaText;
+            document.getElementById('res-hours-display').innerText = `${hoursRecoverable}h / mês`;
+
+            const waMsg = encodeURIComponent(`Olá André, acabei de realizar o Audit ADN da MentAI.\n\nMeu Índice ADN foi de ${scorePercent}% (${statusText}).\n\nQuero destravar o crescimento da minha empresa com uma Operação Autônoma!`);
+            document.getElementById('whatsapp-btn').onclick = () => {
+                window.location.href = `https://wa.me/5511950291979?text=${waMsg}`;
+            };
+
+            showView('results');
+        }
+
+        // --- CHART LANDING ---
+        let landingChart;
+        function initLandingChart() {
+            if(landingChart) landingChart.destroy();
+            const ctx = document.getElementById('landingChart').getContext('2d');
+            landingChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Vendas', 'Suporte', 'Operação'],
+                    datasets: [{
+                        label: 'Manual-First',
+                        data: [15, 20, 12],
+                        backgroundColor: 'rgba(244, 63, 94, 0.4)',
+                        borderColor: '#f43f5e',
+                        borderWidth: 1
+                    }, {
+                        label: 'Método ADN',
+                        data: [1, 3, 0.8],
+                        backgroundColor: 'rgba(16, 185, 129, 0.8)',
+                        borderColor: '#10b981',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#1e293b' }, ticks: { color: '#64748b' } },
+                        x: { grid: { display: false }, ticks: { color: '#cbd5e1' } }
+                    }
+                }
+            });
+        }
+
+        function updateLandingChart(type) {
+            if(type === 'hours') {
+                landingChart.data.datasets[0].data = [15, 20, 12];
+                landingChart.data.datasets[1].data = [1, 3, 0.8];
+            } else {
+                landingChart.data.datasets[0].data = [250, 400, 220];
+                landingChart.data.datasets[1].data = [20, 35, 12];
+            }
+            landingChart.update();
+        }
+
+        window.onload = initLandingChart;
+    </script>
+</body>
+</html>
